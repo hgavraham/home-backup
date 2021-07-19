@@ -1,0 +1,37 @@
+---
+# tasks file for roles/home-directory-backup
+- name: install zip package
+  apt:
+    name: zip
+    state: present
+- name: install unzip package
+  apt:
+    name: unzip
+    state: present 
+- name: create /backups folder
+  file:
+    path: /backups
+    state: directory
+- name:  copy the home-backup.sh to /backups
+  copy:
+    src: "{{ role_path }}/files/home-backup.sh"
+    dest: "/backups/home-backup.sh"
+
+- name: backup home directory on prod everyday 1 AM
+  cron:
+    name: backup home directory
+    job: "/backups/home-backup.sh"
+    user: root
+    state: present
+    hour: "1"
+  when: "'prod' in group_names"
+
+- name: backup home directory on dev sunday-thursday at 10
+  cron:
+    name: backup home directory
+    job: "/backups/home-backup.sh"
+    user: root
+    state: present
+    weekday: "0-2"
+    hour: "10"
+  when: "'dev' in group_names"
