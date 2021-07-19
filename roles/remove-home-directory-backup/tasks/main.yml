@@ -1,0 +1,32 @@
+---
+# tasks file for roles/remove-home-directory-backup
+- name: uninstall zip package
+  apt:
+    name: zip
+    state: absent
+- name: uninstall unzip package
+  apt:
+    name: unzip
+    state: absent
+- name: remove /backups folder
+  file:
+    path: /backups
+    state: absent
+- name: backup home directory on prod everyday 1 AM
+  cron:
+    name: backup home directory
+    job: "/backups/home-backup.sh"
+    user: root
+    state: absent
+    hour: "1"
+  when: "'prod' in group_names"
+
+- name: backup home directory on dev sunday-thursday at 10
+  cron:
+    name: backup home directory
+    job: "/backups/home-backup.sh"
+    user: root
+    state: absent
+    weekday: "0-2"
+    hour: "10"
+  when: "'dev' in group_names"
